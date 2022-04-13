@@ -40,11 +40,9 @@ fileInput("file1", "Choose CSV File",
                              "text/comma-separated-values,text/plain",
                              ".csv"))
 
-# Theme
-pc_list <- list("PC1" = 1, "PC2" = 2, "PC3" = 3, "PC4" = 4)
-
 selectInput("pc_1","Select a Principal Component 1", choices = c(1:6), selected=1)
 selectInput("pc_2","Select a Principal Component 2", choices = c(1:6), selected=2)
+
 ```
 
 ## Column {data-width=800, .tabset}
@@ -52,6 +50,9 @@ selectInput("pc_2","Select a Principal Component 2", choices = c(1:6), selected=
 ### Raw Data
 
 ```{r}
+
+# Show raw data to check if correctly formatted
+
     renderTable({
       dataset <- dataset()
       dataset
@@ -61,23 +62,17 @@ selectInput("pc_2","Select a Principal Component 2", choices = c(1:6), selected=
 ### Elbow plot (Genes)
 
 ```{r}
-
-
-# Annotated_Gene_PA_df <- read.table("/data02/Analysis/Projects/2_CPE_Transmission/Tracking_Plasmid_Change/roary_out/annotation_gene_presence_absence.txt", quote = "", check.names = FALSE, header = TRUE, sep = "\t")
-# #View(Annotated_Gene_PA_df)
-
-
 renderPlot({
 dataset <- dataset()
-Annotated_Gene_PA_df <- dataset() %>% remove_rownames %>% column_to_rownames(var="Gene")
+
+Annotated_Gene_PA_df <- dataset() %>% 
+                        remove_rownames %>%
+                        column_to_rownames(var="Gene")
+
 res.pca <- prcomp(Annotated_Gene_PA_df, scale = TRUE)
+
 fviz_eig(res.pca)
 })
-    
-# Annotated_Gene_PA_df  <- Annotated_Gene_PA_df %>% remove_rownames %>% column_to_rownames(var="Gene")
-# res.pca <- prcomp(Annotated_Gene_PA_df, scale = TRUE)
-# fviz_eig(res.pca)
-
 ```
 
 
@@ -89,22 +84,24 @@ renderPlotly({
 options(ggrepel.max.overlaps = 10)
   
 dataset <- dataset()
-Annotated_Gene_PA_df <- dataset() %>% remove_rownames %>% column_to_rownames(var="Gene")
-res.pca <- prcomp(Annotated_Gene_PA_df, scale = TRUE)
-# fviz_pca_ind(res.pca,
-#              col.ind = "cos2", # Color by the quality of representation
-#              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-#              repel = TRUE     # Avoid text overlapping
-# )
+Annotated_Gene_PA_df <- dataset() %>% 
+                        remove_rownames %>% 
+                        column_to_rownames(var="Gene")
 
-pc_1 <- as.integer(input$pc_1)
-pc_2 <- as.integer(input$pc_2)
-    
+res.pca <- prcomp(Annotated_Gene_PA_df, scale = TRUE)
+
+pc_1 <- as.integer(input$pc_1) # user input
+pc_2 <- as.integer(input$pc_2) # user input
+
+# Draw PCA
+
 pca <- fviz_pca_ind(res.pca,c(pc_1,pc_2),
                    col.ind = "cos2", # Color by the quality of representation
                    gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
                    repel = TRUE     # Avoid text overlapping
 )
+
+# Add labels to PCA plot
 
 ggly <- ggplotly(pca)
 bggly <- plotly_build(ggly)
@@ -123,26 +120,20 @@ bggly
 ### Elbow plot (Samples)
 
 ```{r}
-
-
-# Annotated_Gene_PA_df <- read.table("/data02/Analysis/Projects/2_CPE_Transmission/Tracking_Plasmid_Change/roary_out/annotation_gene_presence_absence.txt", quote = "", check.names = FALSE, header = TRUE, sep = "\t")
-# #View(Annotated_Gene_PA_df)
-
-
 renderPlot({
 dataset <- dataset()
-Annotated_Gene_PA_df <- dataset() %>% remove_rownames %>% column_to_rownames(var="Gene")
+Annotated_Gene_PA_df <- dataset() %>% 
+                        remove_rownames %>% 
+                        column_to_rownames(var="Gene")
 
-#transpose data frame
+# transform
 Annotated_Gene_PA_df_t <- t(as.data.frame(Annotated_Gene_PA_df))
+
 res.pca <- prcomp(Annotated_Gene_PA_df_t, scale = FALSE)
+
 fviz_eig(res.pca)
 })
     
-# Annotated_Gene_PA_df  <- Annotated_Gene_PA_df %>% remove_rownames %>% column_to_rownames(var="Gene")
-# res.pca <- prcomp(Annotated_Gene_PA_df, scale = TRUE)
-# fviz_eig(res.pca)
-
 ```
 
 
@@ -152,7 +143,9 @@ fviz_eig(res.pca)
 renderPlotly({
   
 dataset <- dataset()
-Annotated_Gene_PA_df <- dataset() %>% remove_rownames %>% column_to_rownames(var="Gene")
+Annotated_Gene_PA_df <- dataset() %>% 
+                        remove_rownames %>% 
+                        column_to_rownames(var="Gene")
 
 #transpose data frame
 Annotated_Gene_PA_df_t <- t(as.data.frame(Annotated_Gene_PA_df))
@@ -160,20 +153,19 @@ Annotated_Gene_PA_df_t <- t(as.data.frame(Annotated_Gene_PA_df))
 options(ggrepel.max.overlaps = 10)
 
 Sample_res.pca <- prcomp(Annotated_Gene_PA_df_t, scale = FALSE)
-# fviz_pca_ind(res.pca,
-#              col.ind = "cos2", # Color by the quality of representation
-#              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-#              repel = TRUE     # Avoid text overlapping
-# )
 
 pc_1 <- as.integer(input$pc_1)
 pc_2 <- as.integer(input$pc_2)
+
+# Draw PCA
     
 Sample_pca <- fviz_pca_ind(Sample_res.pca,c(pc_1,pc_2),
                    col.ind = "cos2", # Color by the quality of representation
                    gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
                    repel = TRUE     # Avoid text overlapping
 )
+
+# Add labels to PCA plot
 
 Sample_ggly <- ggplotly(Sample_pca)
 Sample_bggly <- plotly_build(Sample_ggly)
